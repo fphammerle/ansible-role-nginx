@@ -12,6 +12,17 @@
     state: directory
   notify: reload nginx
 
+- name: Create self-signed ssl certificates.
+  x509_certificate:
+    key_path: '/etc/ssl/private/{{vhost.server_name}}.key'
+    cert_path: '/etc/ssl/certs/{{vhost.server_name}}.pem'
+    common_name: '{{vhost.server_name}}'
+  when: vhost.ssl | default(false)
+  loop_control:
+    loop_var: vhost
+  with_items: '{{nginx_vhosts|default([])}}'
+  register: vhosts_x509
+
 - name: Add managed vhost config file (if any vhosts are configured).
   template:
     src: vhosts.j2
