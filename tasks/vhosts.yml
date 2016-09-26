@@ -23,6 +23,16 @@
   with_items: '{{nginx_vhosts|default([])}}'
   register: vhosts_x509
 
+- name: Download ssl certificates.
+  fetch:
+    src: '{{item.cert_path}}'
+    flat: yes
+    dest: '{{nginx_ssl_cert_download_path_prefix}}/{{item.subject_common_name}}'
+    fail_on_missing: yes
+    validate_checksum: yes
+  when: item.subject_common_name is defined and nginx_ssl_cert_download_path_prefix is defined
+  with_items: '{{vhosts_x509.results}}'
+
 - name: Add managed vhost config file (if any vhosts are configured).
   template:
     src: vhosts.j2
