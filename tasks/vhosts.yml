@@ -17,6 +17,7 @@
     key_path: '/etc/ssl/private/{{vhost.server_name}}.key'
     cert_path: '/etc/ssl/certs/{{vhost.server_name}}.pem'
     common_name: '{{vhost.server_name}}'
+    organization_name: '{{vhost.ssl_cert_organization_name|default(None)}}'
   when: vhost.ssl | default(false)
   loop_control:
     loop_var: vhost
