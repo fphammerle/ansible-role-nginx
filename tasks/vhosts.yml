@@ -22,6 +22,8 @@
     loop_var: vhost
   with_items: '{{nginx_vhosts|default([])}}'
   register: vhosts_x509
+  # http://unix.stackexchange.com/questions/247418/do-i-need-to-restart-nginx-if-i-renew-my-security-certificates#comment548097_247460
+  notify: reload nginx
 
 - name: Download ssl certificates.
   fetch:
