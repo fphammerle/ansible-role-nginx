@@ -8,7 +8,7 @@ server {
     ssl_certificate "{{ x509.cert_path }}";
     ssl_certificate_key "{{ x509.key_path }}";
 {% else %}
-    listen {{ vhost.listen | default('80 default_server') }};
+    listen {{ vhost.listen | default('80') }};
 {% endif %}
 
 {% if vhost.server_name is defined %}
