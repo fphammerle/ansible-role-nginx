@@ -1,18 +1,28 @@
 {% for x509 in vhosts_x509.results %}
 
 {%- set vhost = x509.vhost -%}
+{%- set ssl = vhost.ssl | default(false) -%}
 
 server {
-{% if vhost.ssl is defined and vhost.ssl %}
-    listen {{ vhost.listen | default('443') }} ssl;
-    ssl_certificate "{{ x509.cert_path }}";
-    ssl_certificate_key "{{ x509.key_path }}";
-{% else %}
-    listen {{ vhost.listen | default('80') }};
-{% endif %}
+
+    listen
+{%- if ssl %}
+ {{ vhost.listen | default('443') }} ssl
+{%- else %}
+ {{ vhost.listen | default('80') }}
+{%- endif -%}
+{%- if vhost.default_server | default(false) %}
+ default_server
+{%- endif -%}
+;
 
 {% if vhost.server_name is defined %}
     server_name {{ vhost.server_name }};
+{% endif %}
+
+{% if ssl %}
+    ssl_certificate "{{ x509.cert_path }}";
+    ssl_certificate_key "{{ x509.key_path }}";
 {% endif %}
 
 {% if vhost.root is defined %}
