@@ -2,6 +2,7 @@
 
 {%- set vhost = x509.vhost -%}
 {%- set ssl = vhost.ssl | default(false) -%}
+{%- set php_fastcgi = vhost.php_fastcgi | default(false) -%}
 
 server {
 
@@ -29,7 +30,11 @@ server {
     root {{ vhost.root }};
 {% endif %}
 
-    index {{ vhost.index | default('index.html index.htm') }};
+{% if vhost.index is defined %}
+    index {{ vhost.index }};
+{% else %}
+    index {% if php_fastcgi %}index.php {% endif %}index.html;
+{% endif %}
 
 {% if vhost.error_page is defined %}
     error_page {{ vhost.error_page }};
@@ -43,6 +48,25 @@ server {
 
 {% if vhost.return is defined %}
     return {{ vhost.return }};
+{% endif %}
+
+{% if php_fastcgi %}
+    location ~ [^/]\.php(/|$) {
+        # correctly handle request like /test.php/foo/blah.php or /test.php/
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        # check whether the *.php does indeed exist to prevent nginx
+        # to feeding PHP FPM non php script file (like uploaded image)
+        # (if instead of try_files due to nginx bug #321)
+        if (!-f $document_root$fastcgi_script_name) {
+            return 404;
+        }
+        # Mitigate https://httpoxy.org/ vulnerabilities
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+    }
+    # https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/
 {% endif %}
 
 {% if vhost.extra_parameters is defined %}
