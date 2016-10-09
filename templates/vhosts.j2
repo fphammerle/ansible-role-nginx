@@ -3,6 +3,7 @@
 {%- set vhost = x509.vhost -%}
 {%- set ssl = vhost.ssl | default(false) -%}
 {%- set php_fastcgi = vhost.php_fastcgi | default(false) -%}
+{%- set frame_options = vhost.frame_options | default('SAMEORIGIN') -%}
 
 server {
 
@@ -47,6 +48,10 @@ server {
 {% endif %}
 {% if vhost.error_log is defined %}
     error_log {{ vhost.error_log }} error;
+{% endif %}
+
+{% if frame_options %}
+    add_header X-Frame-Options {{frame_options}};
 {% endif %}
 
 {% if vhost.return is defined %}
