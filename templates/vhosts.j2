@@ -24,6 +24,9 @@ server {
 {% if ssl %}
     ssl_certificate "{{ x509.cert_path }}";
     ssl_certificate_key "{{ x509.key_path }}";
+{% if vhost.strict_transport_security | default(false) %}
+    add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; ";
+{% endif %}
 {% endif %}
 
 {% if vhost.root is defined %}
